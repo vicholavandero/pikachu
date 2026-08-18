@@ -1,0 +1,40 @@
+name: Monitor Hunter Card TCG Preventas
+
+on:
+  schedule:
+    # Cada 30 minutos (mínimo recomendado para no saturar el sitio)
+    - cron: "*/30 * * * *"
+  workflow_dispatch: # Permite ejecutarlo manualmente desde GitHub
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # necesario para hacer commit del estado
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: pip install requests beautifulsoup4
+
+      - name: Ejecutar monitor
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python monitor.py
+
+      - name: Guardar estado actualizado
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add products.json
+          git diff --staged --quiet || git commit -m "chore: actualizar productos conocidos"
+          git push
