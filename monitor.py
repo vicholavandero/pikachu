@@ -35,8 +35,12 @@ def get_products() -> list[str]:
         if titles:
             return [t.get_text(strip=True) for t in titles]
 
-    print("WARNING: no se encontraron selectores conocidos. HTML sample:")
-    print(soup.find("ul", class_="products") or "no se encontró <ul.products>")
+    # Verificar si el sitio indica explícitamente que no hay productos
+    no_products = soup.find(class_="woocommerce-info") or soup.find(class_="no-products-found")
+    if no_products or "No se han encontrado productos" in soup.get_text():
+        print("Categoría vacía: no hay preventas disponibles por ahora.")
+    else:
+        print("No se encontraron productos (selector desconocido o página sin resultados).")
     return []
 
 
@@ -59,7 +63,7 @@ def notify_ntfy(topic: str, new_products: list[str]) -> None:
             f"https://ntfy.sh/{topic}",
             data=body.encode("utf-8"),
             headers={
-                "Title": f"🎴 {len(new_products)} nueva(s) preventa(s) en Hunter TCG",
+                "Title": f"{len(new_products)} nueva(s) preventa(s) en Hunter TCG",
                 "Priority": "high",
                 "Tags": "tada,shopping_cart",
                 "Click": URL,
