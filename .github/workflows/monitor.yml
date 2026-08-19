@@ -3,7 +3,7 @@ name: Monitor Hunter Card TCG Preventas
 on:
   schedule:
     # Cada 30 minutos (mínimo recomendado para no saturar el sitio)
-    - cron: "*/5 * * * *"
+    - cron: "*/15 * * * *"
   workflow_dispatch: # Permite ejecutarlo manualmente desde GitHub
 
 jobs:
